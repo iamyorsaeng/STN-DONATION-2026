@@ -1,0 +1,995 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ระบบบริจาคผ้าป่าเพื่อการศึกษา</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Anuphan:wght@300;400;500;600;700&family=Sarabun:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<style>
+  :root{
+    --bg:#ffffff;
+    --bg-alt:#f5f5f7;
+    --ink:#1d1d1f;
+    --muted:#6e6e73;
+    --line:#d2d2d7;
+    --blue:#0071e3;
+    --blue-hover:#0077ed;
+    --radius:18px;
+    --radius-lg:28px;
+    --shadow-sm:0 1px 2px rgba(0,0,0,.04),0 4px 16px -6px rgba(0,0,0,.10);
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{
+    font-family:'Anuphan',-apple-system,BlinkMacSystemFont,sans-serif;color:var(--ink);
+    background:var(--bg);min-height:100vh;font-size:17px;line-height:1.5;
+    -webkit-font-smoothing:antialiased;
+  }
+  h1,h2,h3{letter-spacing:-.015em;font-weight:600}
+  .topband{display:none}
+  .wrap{max-width:1024px;margin:0 auto;padding:0 22px}
+
+  /* ---------- STICKY FROSTED NAV ---------- */
+  header.site{position:sticky;top:0;z-index:50;
+    background:rgba(255,255,255,.72);backdrop-filter:saturate(180%) blur(20px);
+    -webkit-backdrop-filter:saturate(180%) blur(20px);border-bottom:1px solid rgba(0,0,0,.08)}
+  .nav-inner{display:flex;align-items:center;justify-content:space-between;height:52px}
+  .nav-brand{font-weight:600;font-size:16px;color:var(--ink);white-space:nowrap}
+  nav.tabs{display:flex;gap:2px}
+  nav.tabs button{font-family:inherit;font-size:14.5px;font-weight:400;cursor:pointer;border:none;
+    background:transparent;color:var(--muted);padding:6px 13px;border-radius:8px;transition:.15s}
+  nav.tabs button:hover{color:var(--ink);background:var(--bg-alt)}
+  nav.tabs button.active{color:var(--ink);font-weight:600}
+  nav.tabs button:focus-visible{outline:3px solid #b6dbff;outline-offset:2px}
+
+  .view{display:none;animation:fade .3s ease}
+  .view.active{display:block}
+  @keyframes fade{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+
+  /* ---------- APPLE HERO ---------- */
+  .appleHero{text-align:center;padding:54px 0 8px}
+  .ah-eyebrow{margin:0 0 8px;font-size:18px;font-weight:600;color:var(--blue)}
+  .appleHero h1{margin:0;font-size:clamp(38px,7vw,64px);font-weight:700;line-height:1.06;color:var(--ink)}
+  .ah-sub{margin:14px auto 0;max-width:640px;font-size:clamp(19px,2.4vw,24px);color:var(--muted);font-weight:400}
+  .ah-links{margin:22px 0 30px;display:flex;gap:26px;justify-content:center;flex-wrap:wrap}
+  .blue-link{color:var(--blue);font-size:18px;cursor:pointer;text-decoration:none}
+  .blue-link:hover{text-decoration:underline}
+  .ah-media{display:block;width:100%;max-width:980px;margin:0 auto;border-radius:var(--radius-lg);
+    object-fit:cover;box-shadow:0 30px 60px -30px rgba(0,0,0,.3)}
+
+  /* ---------- TOTAL SECTION (hero figure) ---------- */
+  .totalSection{position:relative;overflow:hidden;border-radius:var(--radius-lg);padding:48px 28px;margin:20px 0;text-align:center;color:#fff;
+    background:linear-gradient(135deg,#0a84ff 0%,#0060df 46%,#3f2bd6 100%)}
+  .totalSection::before{content:"";position:absolute;width:520px;height:520px;right:-140px;top:-200px;border-radius:50%;
+    background:radial-gradient(closest-side,rgba(255,255,255,.16),transparent 70%);pointer-events:none}
+  .totalSection::after{content:"";position:absolute;width:360px;height:360px;left:-120px;bottom:-180px;border-radius:50%;
+    background:radial-gradient(closest-side,rgba(255,214,107,.22),transparent 70%);pointer-events:none}
+  .ts-label{position:relative;z-index:1;margin:0 0 8px;font-size:20px;color:rgba(255,255,255,.88);letter-spacing:.02em}
+  .ts-amount{position:relative;z-index:1;font-size:clamp(56px,13vw,118px);font-weight:800;line-height:1;letter-spacing:-.03em;
+    font-variant-numeric:tabular-nums;color:#F2B33C;
+    background:linear-gradient(180deg,#FFEEB0,#F2B33C);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;
+    filter:drop-shadow(0 6px 26px rgba(0,0,0,.22))}
+  .ts-amount .ts-cur{font-size:.26em;font-weight:600;letter-spacing:0;color:#fff;-webkit-text-fill-color:#fff}
+  .totalSection .progress{position:relative;z-index:1;max-width:620px;margin:28px auto 0;height:12px;border-radius:999px;
+    background:rgba(255,255,255,.24);overflow:hidden}
+  .totalSection .progress > i{display:block;height:100%;width:0;border-radius:999px;position:relative;overflow:hidden;
+    background:linear-gradient(90deg,#FFD66B,#F2B33C);transition:width 1s cubic-bezier(.2,.8,.2,1);box-shadow:0 0 18px rgba(244,180,60,.55)}
+  .totalSection .progress > i::after{content:"";position:absolute;top:0;left:0;height:100%;width:45%;
+    background:linear-gradient(90deg,transparent,rgba(255,255,255,.7),transparent);animation:sheen 2.6s ease-in-out infinite}
+  @keyframes sheen{0%{transform:translateX(-130%)}55%,100%{transform:translateX(340%)}}
+  .ts-meta{position:relative;z-index:1;display:flex;justify-content:center;gap:30px;margin-top:16px;font-size:16.5px;color:rgba(255,255,255,.88);flex-wrap:wrap}
+  .ts-meta b{color:#fff;font-weight:700}
+  .ts-pct{color:#FFD66B;font-weight:700}
+  .ts-btn{position:relative;z-index:1;margin-top:24px;background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.4);color:#fff}
+  .ts-btn:hover{background:rgba(255,255,255,.26)}
+
+  /* ---------- BIG-SCREEN BOARD ---------- */
+  #bigscreen{position:fixed;inset:0;z-index:1000;display:none;flex-direction:column;justify-content:center;align-items:center;
+    padding:5vh 5vw;color:#fff;
+    background:radial-gradient(120% 95% at 50% 0%,#1a2a55 0%,#0c1430 55%,#070a18 100%)}
+  #bigscreen.on{display:flex;animation:fade .35s ease}
+  .bs-controls{position:fixed;top:18px;right:20px;display:flex;gap:10px;z-index:2}
+  .bs-btn{background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.28);color:#fff;border-radius:999px;
+    padding:9px 17px;font-family:inherit;font-size:15px;font-weight:500;cursor:pointer;backdrop-filter:blur(6px)}
+  .bs-btn:hover{background:rgba(255,255,255,.22)}
+  .bs-inner{text-align:center;width:100%;max-width:1400px}
+  .bs-title{font-size:clamp(22px,3vw,44px);font-weight:700}
+  .bs-sub{color:rgba(255,255,255,.72);font-size:clamp(15px,1.6vw,24px);margin-top:4px}
+  .bs-label{margin-top:4vh;font-size:clamp(18px,2.2vw,32px);color:rgba(255,255,255,.82);letter-spacing:.05em}
+  .bs-amount{font-weight:800;line-height:.94;margin:1.6vh 0;font-size:clamp(78px,18vw,250px);font-variant-numeric:tabular-nums;
+    color:#F2B33C;background:linear-gradient(180deg,#FFF0B6,#F2B33C);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;
+    filter:drop-shadow(0 0 50px rgba(244,180,60,.4))}
+  .bs-cur{-webkit-text-fill-color:#fff;color:#fff;font-size:.2em;font-weight:600}
+  .bs-progress{max-width:1040px;margin:2.2vh auto 0;height:clamp(16px,1.7vw,28px);border-radius:999px;background:rgba(255,255,255,.16);overflow:hidden}
+  .bs-progress > i{display:block;height:100%;width:0;border-radius:999px;background:linear-gradient(90deg,#FFD66B,#F2B33C);
+    box-shadow:0 0 30px rgba(244,180,60,.6);transition:width 1.2s cubic-bezier(.2,.8,.2,1)}
+  .bs-meta{display:flex;justify-content:center;gap:clamp(22px,5vw,80px);margin-top:2.6vh;font-size:clamp(16px,1.9vw,30px);color:rgba(255,255,255,.85);flex-wrap:wrap}
+  .bs-meta b{color:#fff;font-weight:700}
+  .bs-pct{color:#FFD66B;font-weight:700}
+  .bs-ticker{margin-top:3.6vh;font-size:clamp(15px,1.7vw,26px);color:rgba(255,255,255,.82);max-width:1100px}
+  .bs-ticker-label{color:#FFD66B;font-weight:600;margin-right:10px}
+
+  /* ---------- BENTO GRID (uneven) ---------- */
+  .bento{display:grid;grid-template-columns:repeat(4,1fr);grid-auto-rows:minmax(132px,auto);gap:14px;margin:18px 0}
+  .b-tile{background:var(--bg-alt);border-radius:var(--radius-lg);padding:24px;display:flex;flex-direction:column;
+    justify-content:flex-end;position:relative;overflow:hidden}
+  .b-eyebrow{font-size:13px;font-weight:600;letter-spacing:.04em;color:var(--muted);text-transform:none}
+  .b-tile .v{font-size:38px;font-weight:700;color:var(--ink);font-variant-numeric:tabular-nums;line-height:1.05;letter-spacing:-.02em;margin-top:6px}
+  .b-tile .v.sm{font-size:26px}
+  .b-tile .k{font-size:14px;color:var(--muted);margin-top:4px}
+  .b-poster{grid-column:span 2;grid-row:span 2;cursor:zoom-in;padding:0;justify-content:flex-start}
+  .b-poster .b-eyebrow{position:absolute;top:20px;left:22px;z-index:2;color:#fff;text-shadow:0 1px 8px rgba(0,0,0,.5)}
+  .b-poster-img{width:100%;height:100%;object-fit:cover;display:block;transition:transform .5s ease}
+  .b-poster:hover .b-poster-img{transform:scale(1.04)}
+  .b-stat{grid-column:span 1;justify-content:center;text-align:center}
+  .b-wide{grid-column:span 2;justify-content:center}
+  .b-cta{grid-column:span 4;background:linear-gradient(120deg,#1d1d1f,#3a3a3c);color:#fff;cursor:pointer;
+    flex-direction:row;align-items:center;justify-content:space-between;gap:14px;min-height:96px}
+  .b-cta .b-cta-text{font-size:22px;font-weight:600}
+  .b-cta .blue-link{color:#2997ff;font-size:16px}
+  .b-cta:hover{filter:brightness(1.12)}
+
+  /* ---------- SCROLL REVEAL ---------- */
+  .reveal{opacity:0;transform:translateY(26px);transition:opacity .7s cubic-bezier(.2,.7,.2,1),transform .7s cubic-bezier(.2,.7,.2,1)}
+  .reveal.in{opacity:1;transform:none}
+  .bento .reveal:nth-child(2){transition-delay:.06s}
+  .bento .reveal:nth-child(3){transition-delay:.12s}
+  .bento .reveal:nth-child(4){transition-delay:.18s}
+  .bento .reveal:nth-child(5){transition-delay:.24s}
+
+  /* ---------- CARDS ---------- */
+  .card{background:var(--bg);border:1px solid var(--line);border-radius:var(--radius);padding:26px;margin:18px 0}
+  .card h2{margin:0 0 4px;color:var(--ink);font-size:24px;font-weight:600}
+  .card .hint{color:var(--muted);font-size:15px;margin:0 0 18px}
+  .poster-card{background:var(--bg-alt);border:none;text-align:center}
+
+  /* ---------- POSTER ---------- */
+  .poster{display:block;width:100%;max-width:720px;margin:6px auto 0;border-radius:var(--radius);
+    box-shadow:0 24px 50px -28px rgba(0,0,0,.4);cursor:zoom-in;transition:transform .3s,box-shadow .3s}
+  .poster:hover{transform:scale(1.01)}
+
+  /* ---------- LIGHTBOX ---------- */
+  #lightbox{position:fixed;inset:0;z-index:999;display:none;align-items:center;justify-content:center;
+    background:rgba(0,0,0,.86);padding:24px;cursor:zoom-out;animation:fade .2s ease}
+  #lightbox.on{display:flex}
+  #lightbox img{max-width:100%;max-height:92vh;border-radius:12px}
+  #lightbox .x{position:fixed;top:18px;right:22px;color:#fff;font-size:30px;line-height:1;background:none;border:none;cursor:pointer}
+
+  /* ---------- FORMS / TABLES ---------- */
+  .toolbar{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:16px}
+  input,select{font-family:inherit;font-size:16px;color:var(--ink);border:1px solid var(--line);
+    border-radius:12px;padding:11px 14px;background:#fff;width:100%}
+  input:focus,select:focus{outline:none;border-color:var(--blue);box-shadow:0 0 0 4px rgba(0,113,227,.15)}
+  label.fld{display:block;font-size:14px;font-weight:500;color:var(--muted);margin:0 0 6px}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  .grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px}
+  table{width:100%;border-collapse:collapse;font-size:15.5px}
+  th,td{text-align:left;padding:13px 10px;border-bottom:1px solid var(--line)}
+  th{color:var(--muted);font-weight:500;font-size:13px}
+  td.num,th.num{text-align:right;font-variant-numeric:tabular-nums}
+  tbody tr:hover{background:var(--bg-alt)}
+  .tag{display:inline-block;font-size:12.5px;padding:3px 11px;border-radius:999px;background:#eef0f2;color:#515156;font-weight:500}
+  .tag.anon{background:#e8f1fd;color:#0a5bbf}
+
+  /* ---------- BUTTONS (pill) ---------- */
+  .btn{font-family:inherit;font-size:15.5px;font-weight:500;cursor:pointer;border:none;
+    padding:11px 22px;border-radius:980px;transition:.15s}
+  .btn:focus-visible{outline:3px solid #b6dbff;outline-offset:2px}
+  .btn.primary{background:var(--blue);color:#fff}
+  .btn.primary:hover{background:var(--blue-hover)}
+  .btn.gold{background:#e8e8ed;color:var(--ink)}
+  .btn.gold:hover{background:#dededf}
+  .btn.ghost{background:transparent;border:1px solid var(--line);color:var(--ink)}
+  .btn.ghost:hover{background:var(--bg-alt)}
+  .btn.sm{padding:7px 15px;font-size:14px}
+  .btn.danger{background:transparent;border:1px solid #e6c3bd;color:#c0392b}
+  .btn.danger:hover{background:#fbeeec}
+  .btn-row{display:flex;gap:10px;flex-wrap:wrap}
+
+  .note{font-size:14px;color:var(--muted);background:var(--bg-alt);border-radius:12px;padding:14px 16px}
+  .empty{text-align:center;color:var(--muted);padding:28px 10px}
+
+  /* ---------- LOGIN / SEG / ROLEBAR ---------- */
+  .lock{max-width:400px;margin:30px auto;text-align:center}
+  .lock .ic{font-size:40px}
+  .seg{display:flex;gap:4px;background:var(--bg-alt);border-radius:12px;padding:4px;margin-bottom:14px}
+  .seg button{flex:1;border:none;background:transparent;border-radius:9px;padding:10px;
+    font-family:inherit;font-weight:500;color:var(--muted);cursor:pointer;font-size:14.5px;transition:.15s}
+  .seg button.on{background:#fff;color:var(--ink);box-shadow:0 1px 3px rgba(0,0,0,.12)}
+  .rolebar{display:flex;align-items:center;justify-content:space-between;gap:12px;
+    background:var(--bg-alt);border-radius:14px;padding:14px 18px;margin:18px 0;font-size:15.5px}
+  .rolebar .badge{display:inline-block;background:var(--ink);color:#fff;font-weight:500;
+    font-size:13.5px;padding:3px 12px;border-radius:999px;margin-left:6px}
+  .perm-yes{color:#1a8a4a;font-weight:700}
+  .perm-no{color:#c0392b}
+
+  /* ---------- CERTIFICATE ---------- */
+  .cert-layout{display:grid;grid-template-columns:300px 1fr;gap:20px;align-items:start}
+  .cert-stage{background:var(--bg-alt);border-radius:14px;padding:14px;overflow:auto}
+  .cert{position:relative;width:100%;max-width:900px;margin:0 auto;line-height:1.2;background:#fff;
+    box-shadow:0 8px 24px -12px rgba(0,0,0,.35)}
+  .cert img.bg{display:block;width:100%;height:auto;user-select:none;-webkit-user-drag:none}
+  .cert .ctext{position:absolute;transform:translate(-50%,-50%);white-space:nowrap;
+    font-family:'Sarabun',sans-serif;font-weight:700;color:#3a2410;text-align:center}
+  .ctrl{margin-bottom:14px}
+  .ctrl label{display:flex;justify-content:space-between;font-size:13.5px;color:var(--muted);font-weight:500;margin-bottom:3px}
+  .ctrl input[type=range]{width:100%;accent-color:var(--blue)}
+
+  @media (max-width:760px){
+    .bento{grid-template-columns:1fr 1fr;grid-auto-rows:minmax(120px,auto)}
+    .b-poster{grid-column:span 2;grid-row:span 1;min-height:220px}
+    .b-stat,.b-wide{grid-column:span 1}
+    .b-cta{grid-column:span 2;flex-direction:column;align-items:flex-start;text-align:left}
+    .grid2,.grid3{grid-template-columns:1fr}
+    .cert-layout{grid-template-columns:1fr}
+    nav.tabs button{padding:6px 9px;font-size:13.5px}
+    .nav-brand{font-size:14px}
+  }
+  @media (prefers-reduced-motion:reduce){
+    *{animation:none!important;transition:none!important}
+    .reveal{opacity:1!important;transform:none!important}
+  }
+
+  /* ---------- PRINT ---------- */
+  @media print{
+    body{background:#fff}
+    body *{visibility:hidden}
+    #printArea,#printArea *{visibility:visible}
+    #printArea{position:absolute;inset:0;display:block!important}
+    .print-page{page-break-after:always;position:relative;width:100%}
+    .print-page img{width:100%;display:block}
+  }
+  #printArea{display:none}
+</style>
+</head>
+<body>
+<header class="site">
+  <div class="wrap nav-inner">
+    <span class="nav-brand">โรงเรียนสมเด็จพระธีรญาณมุนี</span>
+    <nav class="tabs">
+      <button class="tab active" data-v="public">หน้าผู้ร่วมบุญ</button>
+      <button class="tab" data-v="cert">รับเกียรติบัตร</button>
+      <button class="tab" data-v="admin">เจ้าหน้าที่</button>
+    </nav>
+  </div>
+</header>
+
+<main class="wrap">
+
+  <!-- ============ PUBLIC ============ -->
+  <section class="view active" id="v-public">
+    <section class="appleHero">
+      <p class="ah-eyebrow">ร่วมเป็นส่วนหนึ่งของบุญใหญ่</p>
+      <h1 id="projTitle">ผ้าป่าเพื่อการศึกษา</h1>
+      <p class="ah-sub" id="projSub">โรงเรียนสมเด็จพระธีรญาณมุนี · ประจำปี ๒๕๖๙</p>
+      <div class="ah-links">
+        <a class="blue-link" onclick="show('cert')">รับเกียรติบัตร&nbsp;›</a>
+        <a class="blue-link" onclick="document.querySelector('.poster-card').scrollIntoView({behavior:'smooth'})">ดูรายละเอียดงาน&nbsp;›</a>
+      </div>
+      <img id="coverImg" class="ah-media reveal" alt="โรงเรียนสมเด็จพระธีรญาณมุนี" loading="lazy">
+    </section>
+
+    <section class="totalSection reveal">
+      <p class="ts-label">ยอดบุญรวมขณะนี้</p>
+      <div class="ts-amount"><span id="grandTotal">๐</span> <span class="ts-cur">บาท</span></div>
+      <div class="progress"><i id="bar"></i></div>
+      <div class="ts-meta">
+        <span>เป้าหมาย <b id="goalTxt">—</b></span>
+        <span class="ts-pct" id="pctTxt">๐%</span>
+        <span>เหลืออีก <b id="remainTxt">—</b></span>
+      </div>
+      <button class="btn ts-btn" onclick="openBoard()">📺 โหมดจอใหญ่สำหรับงาน</button>
+    </section>
+
+    <section class="bento">
+      <div class="b-tile b-poster reveal" onclick="openLightbox(document.getElementById('posterImg').src)">
+        <span class="b-eyebrow">รายละเอียดงานบุญ</span>
+        <img id="posterImg" class="b-poster-img" alt="ป้ายประชาสัมพันธ์งานผ้าป่าเพื่อการศึกษา" loading="lazy">
+      </div>
+      <div class="b-tile b-stat reveal"><div class="v" id="sCount">๐</div><div class="k">ผู้ร่วมบุญ</div></div>
+      <div class="b-tile b-stat reveal"><div class="v" id="sAvg">๐</div><div class="k">เฉลี่ยต่อท่าน (บาท)</div></div>
+      <div class="b-tile b-wide reveal"><span class="b-eyebrow">อัปเดตล่าสุด</span><div class="v sm" id="sUpd">—</div></div>
+      <div class="b-tile b-cta reveal" onclick="show('cert')">
+        <div class="b-cta-text">รับเกียรติบัตรของคุณ</div>
+        <span class="blue-link">ค้นหาด้วยเบอร์โทร หรือรหัส&nbsp;›</span>
+      </div>
+    </section>
+
+    <div class="card reveal">
+      <h2>รายนามผู้ร่วมทำบุญ</h2>
+      <p class="hint">รายชื่อจะปรากฏทันทีเมื่อเจ้าหน้าที่บันทึกข้อมูล</p>
+      <div class="toolbar">
+        <div style="flex:1;min-width:200px"><input id="pubSearch" placeholder="ค้นหาชื่อผู้ทำบุญ…"></div>
+      </div>
+      <div style="overflow:auto">
+        <table>
+          <thead><tr><th style="width:54px">ลำดับ</th><th>รายนาม</th><th>ช่องทาง</th><th class="num">จำนวนเงิน (บาท)</th></tr></thead>
+          <tbody id="pubBody"></tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ CERTIFICATE (public download) ============ -->
+  <section class="view" id="v-cert">
+    <div class="card">
+      <h2>ดาวน์โหลดเกียรติบัตรผู้ร่วมบุญ</h2>
+      <p class="hint">กรอกเบอร์โทรศัพท์ หรือรหัสอ้างอิง (เช่น PB-1001) ที่ได้รับ เพื่อค้นหาและพิมพ์เกียรติบัตร</p>
+      <div class="toolbar">
+        <div style="flex:1;min-width:220px"><input id="findInput" placeholder="เบอร์โทร หรือ รหัสอ้างอิง"></div>
+        <button class="btn primary" onclick="findCert()">ค้นหา</button>
+      </div>
+      <div id="findResult"></div>
+    </div>
+  </section>
+
+  <!-- ============ ADMIN ============ -->
+  <section class="view" id="v-admin">
+
+    <!-- login -->
+    <div class="card lock" id="loginCard">
+      <div class="ic">🔐</div>
+      <h2 style="text-align:center">เข้าสู่ระบบ</h2>
+      <p class="hint" style="text-align:center">เลือกบทบาทแล้วกรอกรหัสผ่าน</p>
+      <div class="seg" style="margin-bottom:12px">
+        <button class="on" id="rAdmin" onclick="pickRole('admin')">ผู้ดูแลระบบ</button>
+        <button id="rAcct" onclick="pickRole('acct')">เจ้าหน้าที่บัญชี</button>
+      </div>
+      <input id="pass" type="password" placeholder="รหัสผ่าน" onkeydown="if(event.key==='Enter')doLogin()">
+      <div style="height:10px"></div>
+      <button class="btn primary" style="width:100%" onclick="doLogin()">เข้าสู่ระบบ</button>
+      <p id="loginErr" style="color:#9c2b2b;font-size:14px;margin:10px 0 0"></p>
+      <p class="hint" style="text-align:center;margin-top:10px">รหัสตัวอย่าง — ผู้ดูแลระบบ: 1234 · เจ้าหน้าที่บัญชี: 5678 (เปลี่ยนเป็น Firebase Auth เมื่อใช้งานจริง)</p>
+    </div>
+
+    <!-- panel -->
+    <div id="adminPanel" style="display:none">
+
+      <div class="rolebar">
+        <span>เข้าสู่ระบบในฐานะ <span class="badge" id="roleBadge"></span></span>
+        <button class="btn ghost sm" onclick="logout()">ออกจากระบบ</button>
+      </div>
+
+
+      <div class="card">
+        <h2>เพิ่มรายการบริจาค</h2>
+        <p class="hint">โหมดละเอียด = ออกเกียรติบัตรได้ · โหมดเร่งด่วน = สมทบยอดรวมแบบไม่ระบุชื่อ</p>
+        <div class="seg">
+          <button class="on" id="mDetail" onclick="setMode('detail')">โหมดละเอียด (มีชื่อ)</button>
+          <button id="mQuick" onclick="setMode('quick')">โหมดเร่งด่วน (ยอดรวม)</button>
+        </div>
+
+        <div id="formDetail">
+          <div class="grid2">
+            <div><label class="fld">ชื่อ–สกุล ผู้ทำบุญ</label><input id="dName" placeholder="เช่น คุณสมชาย ใจบุญ"></div>
+            <div><label class="fld">เบอร์โทรศัพท์</label><input id="dPhone" placeholder="08x-xxx-xxxx"></div>
+          </div>
+          <div style="height:12px"></div>
+          <div class="grid3">
+            <div><label class="fld">จำนวนเงิน (บาท)</label><input id="dAmt" type="number" min="0" placeholder="0"></div>
+            <div><label class="fld">วัน–เวลา</label><input id="dDate" type="datetime-local"></div>
+            <div><label class="fld">ช่องทางรับเงิน</label>
+              <select id="dChan"><option>เงินสด</option><option>โอนผ่านธนาคาร</option><option>พร้อมเพย์/QR</option><option>เช็ค</option></select>
+            </div>
+          </div>
+        </div>
+
+        <div id="formQuick" style="display:none">
+          <div class="grid3">
+            <div><label class="fld">ยอดสมทบ (บาท)</label><input id="qAmt" type="number" min="0" placeholder="0"></div>
+            <div><label class="fld">วัน–เวลา</label><input id="qDate" type="datetime-local"></div>
+            <div><label class="fld">หมายเหตุ</label><input id="qNote" placeholder="เช่น ยอดตู้บริจาค"></div>
+          </div>
+        </div>
+
+        <div style="height:14px"></div>
+        <div class="btn-row">
+          <button class="btn primary" onclick="addRecord()">บันทึกรายการ</button>
+          <button class="btn ghost" onclick="clearForm()">ล้างฟอร์ม</button>
+        </div>
+      </div>
+
+      <div class="card" id="settingsCard">
+        <h2>ตั้งค่าโครงการ</h2>
+        <div class="grid3">
+          <div><label class="fld">ชื่อโครงการ</label><input id="setTitle" oninput="applySettings()"></div>
+          <div><label class="fld">ข้อความรอง</label><input id="setSub" oninput="applySettings()"></div>
+          <div><label class="fld">เป้าหมาย (บาท)</label><input id="setGoal" type="number" min="0" oninput="applySettings()"></div>
+        </div>
+        <div style="height:12px"></div>
+        <div class="grid2">
+          <div><label class="fld">URL ภาพโรงเรียน (คัฟเวอร์)</label><input id="setSchool" oninput="schoolImg=this.value;applyImages()"></div>
+          <div><label class="fld">URL แม่แบบเกียรติบัตร</label><input id="setTpl" oninput="tplUrl=this.value;applyImages();renderCertPreview()"></div>
+        </div>
+        <div style="height:12px"></div>
+        <label class="fld">URL ป้ายประชาสัมพันธ์งาน</label>
+        <input id="setPoster" oninput="posterImg=this.value;applyImages()">
+        <p class="note" style="margin-top:10px">ℹ️ ระบบนี้เก็บข้อมูลในหน่วยความจำชั่วคราว (รีเฟรชแล้วหาย) สำหรับสาธิต — เมื่อใช้งานจริงให้ต่อ Firebase Firestore ตามคำอธิบายท้ายไฟล์ ข้อมูลจะ Real-time และถาวรทันที</p>
+      </div>
+
+      <div class="card" id="usersCard">
+        <h2>ผู้ใช้งานและสิทธิ์การเข้าถึง</h2>
+        <p class="hint">ผู้ดูแลระบบกำหนดสิทธิ์ — แยกจากงานบันทึกของเจ้าหน้าที่บัญชี</p>
+        <div style="overflow:auto">
+          <table>
+            <thead><tr><th>สิทธิ์การใช้งาน</th><th style="text-align:center">ผู้ดูแลระบบ</th><th style="text-align:center">เจ้าหน้าที่บัญชี</th></tr></thead>
+            <tbody>
+              <tr><td>บันทึก / แก้ไขการบริจาค</td><td align="center" class="perm-yes">✓</td><td align="center" class="perm-yes">✓</td></tr>
+              <tr><td>สมทบยอดเร่งด่วน</td><td align="center" class="perm-yes">✓</td><td align="center" class="perm-yes">✓</td></tr>
+              <tr><td>ออก / พิมพ์เกียรติบัตร</td><td align="center" class="perm-yes">✓</td><td align="center" class="perm-yes">✓</td></tr>
+              <tr><td>ลบรายการบริจาค</td><td align="center" class="perm-yes">✓</td><td align="center" class="perm-no">✗</td></tr>
+              <tr><td>ตั้งค่าโครงการ / รูปภาพ</td><td align="center" class="perm-yes">✓</td><td align="center" class="perm-no">✗</td></tr>
+              <tr><td>จัดการผู้ใช้และรหัสผ่าน</td><td align="center" class="perm-yes">✓</td><td align="center" class="perm-no">✗</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div style="height:14px"></div>
+        <div class="grid2">
+          <div><label class="fld">รหัสผ่าน — ผู้ดูแลระบบ</label><input id="paAdmin" placeholder="รหัสใหม่"></div>
+          <div><label class="fld">รหัสผ่าน — เจ้าหน้าที่บัญชี</label><input id="paAcct" placeholder="รหัสใหม่"></div>
+        </div>
+        <div style="height:12px"></div>
+        <button class="btn primary" onclick="saveAccts()">บันทึกรหัสผ่าน</button>
+      </div>
+
+      <div class="card">
+        <h2>จัดการรายการทั้งหมด</h2>
+        <p class="hint">แก้ไข/ลบได้หากกรอกผิด · กดปุ่มเกียรติบัตรเพื่อสร้างเฉพาะใบนั้น</p>
+        <div class="toolbar">
+          <div style="flex:1;min-width:200px"><input id="admSearch" placeholder="ค้นหา…" oninput="renderAdmin()"></div>
+          <button class="btn gold" onclick="batchPrint()">🖨️ พิมพ์เกียรติบัตรทั้งหมด (Batch)</button>
+        </div>
+        <div style="overflow:auto">
+          <table>
+            <thead><tr><th>รายการ</th><th>ช่องทาง</th><th>รหัส/เบอร์</th><th class="num">จำนวน</th><th style="width:1%">จัดการ</th></tr></thead>
+            <tbody id="admBody"></tbody>
+          </table>
+        </div>
+      </div>
+
+    </div><!-- /panel -->
+  </section>
+
+  <!-- ============ CERT EDITOR (admin) ============ -->
+  <section class="view" id="v-editor">
+    <div class="card">
+      <h2>เกียรติบัตร — <span id="edName" style="color:var(--ink)"></span></h2>
+      <p class="hint">เลื่อนสไลเดอร์เพื่อจัดตำแหน่งข้อความให้พอดีกับแม่แบบ แล้วกดพิมพ์/บันทึก PDF</p>
+      <div class="cert-layout">
+        <div>
+          <div id="certCtrls"></div>
+          <div class="btn-row">
+            <button class="btn primary" onclick="printOne()">🖨️ พิมพ์ / บันทึก PDF</button>
+            <button class="btn gold" onclick="downloadPdf()">⬇️ ดาวน์โหลด PDF</button>
+          </div>
+          <button class="btn ghost sm" style="margin-top:10px" onclick="show('admin')">← กลับหน้าจัดการ</button>
+          <p class="note" style="margin-top:12px">หากปุ่ม “ดาวน์โหลด PDF” ใช้ไม่ได้ (รูปแม่แบบไม่อนุญาต CORS) ให้ใช้ปุ่ม “พิมพ์/บันทึก PDF” แล้วเลือกปลายทางเป็น “Save as PDF” ได้ผลชัวร์และฟอนต์ไทยไม่เพี้ยน</p>
+        </div>
+        <div class="cert-stage">
+          <div class="cert" id="certNode">
+            <img class="bg" id="certImg" crossorigin="anonymous" alt="แม่แบบเกียรติบัตร">
+            <div class="ctext" id="t-name"></div>
+            <div class="ctext" id="t-amount"></div>
+            <div class="ctext" id="t-date"></div>
+            <div class="ctext" id="t-ref"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<div style="height:40px"></div>
+<div class="topband"></div>
+<div id="printArea"></div>
+<div id="lightbox" onclick="closeLightbox()"><button class="x" onclick="closeLightbox()" aria-label="ปิด">✕</button><img id="lbImg" alt="ภาพขนาดเต็ม"></div>
+
+<div id="bigscreen">
+  <div class="bs-controls">
+    <button class="bs-btn" onclick="toggleBoardFs()">⛶ เต็มจอ</button>
+    <button class="bs-btn" onclick="closeBoard()">✕ ปิด</button>
+  </div>
+  <div class="bs-inner">
+    <div class="bs-title" id="bsTitle">ผ้าป่าเพื่อการศึกษา</div>
+    <div class="bs-sub" id="bsSub">โรงเรียนสมเด็จพระธีรญาณมุนี</div>
+    <div class="bs-label">ยอดบุญรวมขณะนี้</div>
+    <div class="bs-amount"><span id="bsTotal">๐</span><span class="bs-cur"> บาท</span></div>
+    <div class="bs-progress"><i id="bsBar"></i></div>
+    <div class="bs-meta">
+      <span>เป้าหมาย <b id="bsGoal">—</b></span>
+      <span class="bs-pct" id="bsPct">๐%</span>
+      <span>ผู้ร่วมบุญ <b id="bsCount">๐</b> ท่าน</span>
+    </div>
+    <div class="bs-ticker"><span class="bs-ticker-label">ขออนุโมทนาบุญ</span><span id="bsDonors">—</span></div>
+  </div>
+</div>
+
+<script>
+/* =========================================================
+   ระบบบริจาคผ้าป่า — ต้นแบบ (in-memory)
+   เปลี่ยนชั้นข้อมูล (DB.*) เป็น Firebase Firestore เมื่อใช้งานจริง
+   ========================================================= */
+
+let tplUrl = "https://i.postimg.cc/44SQNszF/wmbr-ca-kh-thab-yw-n-sthapna-rong-re-y-nkhr-br-xb-51-p.png";
+let schoolImg = "https://i.postimg.cc/NM1kjzwm/EEB466F0-7D4E-49D0-A1FB-9E30F7BB311A.png";
+let posterImg = "https://i.postimg.cc/76Dm0kXv/p-ay-win-lhiy-t-dhn-arr-ceaa-ta-ki-(365-x-213-sm-).png";
+
+const settings = {
+  title:"ผ้าป่าเพื่อการศึกษา",
+  sub:"โรงเรียนสมเด็จพระธีรญาณมุนี · ประจำปี ๒๕๖๙",
+  goal:500000
+};
+
+// ตำแหน่งข้อความบนเกียรติบัตร (หน่วย % ของขนาดรูป) ปรับได้
+const layout = {
+  name:  {x:50, y:46, size:4.2},
+  amount:{x:50, y:58, size:2.4},
+  date:  {x:50, y:90, size:1.9},
+  ref:   {x:85, y:93, size:1.4}
+};
+
+// ข้อมูลตัวอย่าง
+let globalRef = 1000;
+function uid(){return Math.random().toString(36).slice(2,9)}
+let records = [
+  rec("คุณสมชาย ใจบุญ","0812345678",9999,"โอนผ่านธนาคาร","2026-06-10T09:30"),
+  rec("ครอบครัวเพิ่มพูนทรัพย์","0863334444",5000,"พร้อมเพย์/QR","2026-06-11T14:10"),
+  rec("คุณยายมาลี ศรีสุข","0897776655",2000,"เงินสด","2026-06-12T08:00"),
+  quickRec(15000,"ยอดตู้บริจาควันงาน","2026-06-13T16:00")
+];
+
+let refSeq = 1004;
+let mode = "detail";
+let currentEditId = null;
+
+function rec(name,phone,amount,chan,dt){
+  return {id:uid(),type:"detail",name,phone,amount:+amount,chan,dt,ref:"PB-"+(++globalRef)};
+}
+function quickRec(amount,note,dt){
+  return {id:uid(),type:"quick",name:"(สมทบไม่ระบุชื่อ)",phone:"",amount:+amount,chan:note||"สมทบยอดรวม",dt,ref:""};
+}
+
+/* ---------- การแสดงผล (เลขไทย / วันที่ / บาท) ---------- */
+const TH_NUM = ["๐","๑","๒","๓","๔","๕","๖","๗","๘","๙"];
+function toThaiNum(s){return String(s).replace(/[0-9]/g,d=>TH_NUM[d])}
+function money(n){return Number(n||0).toLocaleString("th-TH")}
+function moneyThai(n){return toThaiNum(money(n))}
+
+const TH_MONTH=["มกราคม","กุมภาพันธ์","มีนาคม","เมษายน","พฤษภาคม","มิถุนายน","กรกฎาคม","สิงหาคม","กันยายน","ตุลาคม","พฤศจิกายน","ธันวาคม"];
+function thaiDate(dt,withTime){
+  if(!dt) return "—";
+  const d=new Date(dt);
+  if(isNaN(d)) return "—";
+  let s=`${toThaiNum(d.getDate())} ${TH_MONTH[d.getMonth()]} ${toThaiNum(d.getFullYear()+543)}`;
+  if(withTime) s+= ` เวลา ${toThaiNum(String(d.getHours()).padStart(2,"0"))}.${toThaiNum(String(d.getMinutes()).padStart(2,"0"))} น.`;
+  return s;
+}
+
+/* ---------- แปลงจำนวนเงินเป็นตัวอักษรไทย (บาทถ้วน) ---------- */
+function bahtText(amount){
+  amount=Math.abs(Number(amount)||0);
+  const baht=Math.floor(amount), satang=Math.round((amount-baht)*100);
+  const N=["","หนึ่ง","สอง","สาม","สี่","ห้า","หก","เจ็ด","แปด","เก้า"];
+  const P=["","สิบ","ร้อย","พัน","หมื่น","แสน"];
+  function readGroup(g){
+    let r="",len=g.length;
+    for(let i=0;i<len;i++){
+      const d=+g[i], p=len-i-1;
+      if(d===0) continue;
+      if(p===0&&d===1&&len>1) r+="เอ็ด";
+      else if(p===1&&d===2) r+="ยี่สิบ";
+      else if(p===1&&d===1) r+="สิบ";
+      else r+=N[d]+P[p];
+    }
+    return r;
+  }
+  function read(nStr){
+    nStr=String(nStr).replace(/^0+/,"")||"0";
+    if(nStr==="0") return "ศูนย์";
+    let groups=[],s=nStr;
+    while(s.length>6){groups.unshift(s.slice(-6));s=s.slice(0,-6);}
+    groups.unshift(s);
+    let r="";
+    for(let i=0;i<groups.length;i++){
+      const part=readGroup(groups[i]);
+      const lvl=groups.length-i-1;
+      if(part){r+=part; if(lvl>0) r+="ล้าน";}
+    }
+    return r;
+  }
+  let t=read(baht)+"บาท";
+  t+= satang===0 ? "ถ้วน" : read(satang)+"สตางค์";
+  return t;
+}
+
+/* ---------- คำนวณยอด ---------- */
+function grandTotal(){return records.reduce((a,r)=>a+(+r.amount||0),0)}
+function namedRecords(){return records.filter(r=>r.type==="detail")}
+function lastUpdate(){
+  const ds=records.map(r=>new Date(r.dt)).filter(d=>!isNaN(d));
+  if(!ds.length) return "—";
+  return thaiDate(new Date(Math.max(...ds)));
+}
+
+/* =========================================================
+   RENDER
+   ========================================================= */
+function animateNumber(el,to,fmt){
+  fmt=fmt||moneyThai;
+  const reduce=matchMedia("(prefers-reduced-motion:reduce)").matches;
+  const cur=+(el.dataset.cur||0);
+  if(reduce||cur===to){el.textContent=fmt(to);el.dataset.cur=to;return;}
+  const dur=900, t0=performance.now();
+  function step(t){
+    const k=Math.min(1,(t-t0)/dur), e=1-Math.pow(1-k,3), val=Math.round(cur+(to-cur)*e);
+    el.textContent=fmt(val);
+    if(k<1) requestAnimationFrame(step); else el.dataset.cur=to;
+  }
+  requestAnimationFrame(step);
+}
+
+function renderPublic(){
+  const total=grandTotal();
+  animateNumber(document.getElementById("grandTotal"),total);
+  const pct=settings.goal>0?Math.min(100,total/settings.goal*100):0;
+  document.getElementById("bar").style.width=pct+"%";
+  document.getElementById("goalTxt").textContent=moneyThai(settings.goal)+" บาท";
+  document.getElementById("pctTxt").textContent=toThaiNum(pct.toFixed(1))+"%";
+  document.getElementById("remainTxt").textContent=moneyThai(Math.max(0,settings.goal-total))+" บาท";
+
+  const named=namedRecords();
+  animateNumber(document.getElementById("sCount"),named.length,toThaiNum);
+  animateNumber(document.getElementById("sAvg"),named.length?Math.round(named.reduce((a,r)=>a+r.amount,0)/named.length):0,moneyThai);
+  document.getElementById("sUpd").textContent=lastUpdate();
+
+  const q=(document.getElementById("pubSearch").value||"").trim();
+  const list=named.filter(r=>!q||r.name.includes(q)).sort((a,b)=>new Date(b.dt)-new Date(a.dt));
+  const body=document.getElementById("pubBody");
+  body.innerHTML = list.length ? list.map((r,i)=>`
+    <tr><td>${toThaiNum(i+1)}</td><td>${esc(r.name)}</td>
+    <td><span class="tag">${esc(r.chan)}</span></td>
+    <td class="num">${moneyThai(r.amount)}</td></tr>`).join("")
+    : `<tr><td colspan="4" class="empty">ยังไม่มีรายชื่อในขณะนี้</td></tr>`;
+}
+
+function renderAdmin(){
+  const q=(document.getElementById("admSearch").value||"").trim();
+  const list=[...records].sort((a,b)=>new Date(b.dt)-new Date(a.dt))
+    .filter(r=>!q||r.name.includes(q)||(r.ref||"").includes(q)||(r.phone||"").includes(q));
+  const body=document.getElementById("admBody");
+  body.innerHTML = list.length ? list.map(r=>`
+    <tr>
+      <td><b>${esc(r.name)}</b><br><span style="color:var(--ink-soft);font-size:13px">${thaiDate(r.dt,true)}</span></td>
+      <td>${r.type==="quick"?`<span class="tag anon">เร่งด่วน</span> `:""}<span class="tag">${esc(r.chan)}</span></td>
+      <td style="font-size:13.5px">${r.ref?esc(r.ref):"—"}<br><span style="color:var(--ink-soft)">${esc(r.phone||"")}</span></td>
+      <td class="num">${moneyThai(r.amount)}</td>
+      <td>
+        <div class="btn-row" style="flex-wrap:nowrap">
+          ${r.type==="detail"?`<button class="btn gold sm" onclick="openCert('${r.id}')">เกียรติบัตร</button>`:""}
+          <button class="btn ghost sm" onclick="editRecord('${r.id}')">แก้ไข</button>
+          ${isAdmin()?`<button class="btn danger sm" onclick="delRecord('${r.id}')">ลบ</button>`:""}
+        </div>
+      </td>
+    </tr>`).join("")
+    : `<tr><td colspan="5" class="empty">ยังไม่มีรายการ</td></tr>`;
+}
+
+function esc(s){return String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]))}
+
+/* =========================================================
+   ADMIN ACTIONS
+   ========================================================= */
+function setMode(m){
+  mode=m;
+  document.getElementById("mDetail").classList.toggle("on",m==="detail");
+  document.getElementById("mQuick").classList.toggle("on",m==="quick");
+  document.getElementById("formDetail").style.display=m==="detail"?"":"none";
+  document.getElementById("formQuick").style.display=m==="quick"?"":"none";
+}
+
+function addRecord(){
+  if(mode==="detail"){
+    const name=val("dName").trim(), amt=+val("dAmt");
+    if(!name){alert("กรุณากรอกชื่อผู้ทำบุญ");return;}
+    if(!(amt>0)){alert("กรุณากรอกจำนวนเงินให้ถูกต้อง");return;}
+    const dt=val("dDate")||new Date().toISOString().slice(0,16);
+    if(currentEditId){
+      const r=records.find(x=>x.id===currentEditId);
+      Object.assign(r,{name,phone:val("dPhone").trim(),amount:amt,dt,chan:val("dChan")});
+      currentEditId=null;
+    }else{
+      records.push({id:uid(),type:"detail",name,phone:val("dPhone").trim(),amount:amt,chan:val("dChan"),dt,ref:"PB-"+(++globalRef)});
+    }
+  }else{
+    const amt=+val("qAmt");
+    if(!(amt>0)){alert("กรุณากรอกยอดสมทบให้ถูกต้อง");return;}
+    const dt=val("qDate")||new Date().toISOString().slice(0,16);
+    records.push(quickRec(amt,val("qNote").trim(),dt));
+  }
+  clearForm(); renderAll();
+}
+
+function editRecord(id){
+  const r=records.find(x=>x.id===id);
+  if(!r) return;
+  if(r.type==="quick"){setMode("quick"); set("qAmt",r.amount); set("qDate",r.dt); set("qNote",r.chan); }
+  else{
+    setMode("detail"); currentEditId=id;
+    set("dName",r.name); set("dPhone",r.phone); set("dAmt",r.amount); set("dDate",r.dt);
+    document.getElementById("dChan").value=r.chan;
+  }
+  window.scrollTo({top:document.getElementById("v-admin").offsetTop,behavior:"smooth"});
+}
+
+function delRecord(id){
+  if(!confirm("ยืนยันลบรายการนี้?")) return;
+  records=records.filter(x=>x.id!==id);
+  if(currentEditId===id){currentEditId=null;clearForm();}
+  renderAll();
+}
+
+function clearForm(){
+  ["dName","dPhone","dAmt","dDate","qAmt","qDate","qNote"].forEach(id=>set(id,""));
+  currentEditId=null;
+}
+
+function applySettings(){
+  settings.title=val("setTitle")||settings.title;
+  settings.sub=val("setSub");
+  settings.goal=+val("setGoal")||settings.goal;
+  document.getElementById("projTitle").textContent=settings.title;
+  document.getElementById("projSub").textContent=settings.sub;
+  renderPublic();
+}
+
+function val(id){return document.getElementById(id).value}
+function set(id,v){const e=document.getElementById(id);if(e)e.value=v}
+
+/* =========================================================
+   CERTIFICATE
+   ========================================================= */
+function openCert(id){
+  const r=records.find(x=>x.id===id);
+  if(!r) return;
+  certData=r;
+  document.getElementById("edName").textContent=r.name;
+  document.getElementById("certImg").src=tplUrl;
+  buildCtrls();
+  renderCertPreview();
+  show("editor");
+}
+let certData=null;
+
+function buildCtrls(){
+  const fields=[["name","ชื่อผู้ทำบุญ"],["amount","จำนวนเงิน"],["date","วันที่"],["ref","รหัสอ้างอิง"]];
+  document.getElementById("certCtrls").innerHTML=fields.map(([k,lbl])=>`
+    <div class="ctrl">
+      <label>${lbl} — แนวนอน <span>${layout[k].x}%</span></label>
+      <input type="range" min="0" max="100" value="${layout[k].x}" oninput="layout.${k}.x=+this.value;this.previousElementSibling.querySelector('span').textContent=this.value+'%';renderCertPreview()">
+      <label>แนวตั้ง <span>${layout[k].y}%</span></label>
+      <input type="range" min="0" max="100" value="${layout[k].y}" oninput="layout.${k}.y=+this.value;this.previousElementSibling.querySelector('span').textContent=this.value+'%';renderCertPreview()">
+      <label>ขนาด <span>${layout[k].size}</span></label>
+      <input type="range" min="0.8" max="8" step="0.1" value="${layout[k].size}" oninput="layout.${k}.size=+this.value;this.previousElementSibling.querySelector('span').textContent=this.value;renderCertPreview()">
+    </div>`).join("");
+}
+
+function certValues(r){
+  return {
+    name:r.name,
+    amount:`จำนวน ${moneyThai(r.amount)} บาท (${bahtText(r.amount)})`,
+    date:`ให้ไว้ ณ วันที่ ${thaiDate(r.dt)}`,
+    ref:r.ref||""
+  };
+}
+
+function renderCertPreview(){
+  if(!certData) return;
+  const v=certValues(certData);
+  const node=document.getElementById("certNode");
+  const w=node.clientWidth||700;
+  ["name","amount","date","ref"].forEach(k=>{
+    const el=document.getElementById("t-"+k);
+    el.textContent=v[k];
+    el.style.left=layout[k].x+"%";
+    el.style.top=layout[k].y+"%";
+    el.style.fontSize=(layout[k].size/100*w)+"px";
+  });
+}
+window.addEventListener("resize",renderCertPreview);
+
+/* ---- พิมพ์ใบเดียว (window.print) ---- */
+function buildPrintPage(r){
+  const v=certValues(r);
+  const texts=["name","amount","date","ref"].map(k=>
+    `<div style="position:absolute;left:${layout[k].x}%;top:${layout[k].y}%;transform:translate(-50%,-50%);
+      font-family:'Sarabun';font-weight:700;color:#3a2410;white-space:nowrap;font-size:${layout[k].size}vw">${esc(v[k])}</div>`).join("");
+  return `<div class="print-page"><div style="position:relative"><img src="${tplUrl}">${texts}</div></div>`;
+}
+function printOne(){
+  if(!certData) return;
+  document.getElementById("printArea").innerHTML=buildPrintPage(certData);
+  setTimeout(()=>window.print(),250);
+}
+function batchPrint(){
+  const list=namedRecords();
+  if(!list.length){alert("ยังไม่มีรายชื่อสำหรับออกเกียรติบัตร");return;}
+  if(!confirm(`พิมพ์เกียรติบัตร ${list.length} ใบ?`)) return;
+  document.getElementById("printArea").innerHTML=list.map(buildPrintPage).join("");
+  setTimeout(()=>window.print(),350);
+}
+
+/* ---- ดาวน์โหลด PDF (html2canvas + jsPDF) ---- */
+async function downloadPdf(){
+  if(!certData) return;
+  try{
+    const node=document.getElementById("certNode");
+    const canvas=await html2canvas(node,{scale:2,useCORS:true,backgroundColor:"#fff"});
+    const img=canvas.toDataURL("image/png");
+    const {jsPDF}=window.jspdf;
+    const landscape=canvas.width>=canvas.height;
+    const pdf=new jsPDF({orientation:landscape?"l":"p",unit:"px",format:[canvas.width,canvas.height]});
+    pdf.addImage(img,"PNG",0,0,canvas.width,canvas.height);
+    pdf.save(`เกียรติบัตร_${certData.name}.pdf`);
+  }catch(e){
+    alert("ไม่สามารถสร้าง PDF อัตโนมัติได้ (รูปแม่แบบอาจไม่อนุญาต CORS)\nกรุณาใช้ปุ่ม “พิมพ์ / บันทึก PDF” แทน แล้วเลือก Save as PDF");
+    console.error(e);
+  }
+}
+
+/* =========================================================
+   PUBLIC: ค้นหาเกียรติบัตร
+   ========================================================= */
+function findCert(){
+  const q=val("findInput").trim();
+  const box=document.getElementById("findResult");
+  if(!q){box.innerHTML="";return;}
+  const r=namedRecords().find(x=>x.ref.toLowerCase()===q.toLowerCase()||(x.phone&&x.phone.replace(/\D/g,"")===q.replace(/\D/g,"")));
+  if(!r){
+    box.innerHTML=`<p class="note" style="margin-top:14px">ไม่พบข้อมูล กรุณาตรวจสอบเบอร์โทร/รหัสอ้างอิงอีกครั้ง หรือสอบถามเจ้าหน้าที่</p>`;
+    return;
+  }
+  box.innerHTML=`
+    <div class="note" style="margin-top:14px;border-style:solid">
+      พบรายการของ <b>${esc(r.name)}</b> · จำนวน <b>${moneyThai(r.amount)} บาท</b> · รหัส <b>${esc(r.ref)}</b>
+    </div>
+    <div style="height:12px"></div>
+    <button class="btn primary" onclick="openCert('${r.id}')">เปิดเกียรติบัตร →</button>`;
+}
+
+/* =========================================================
+   NAV / LOGIN / BOOTSTRAP
+   ========================================================= */
+let authed=false;
+const accounts={
+  admin:{pass:"1234",label:"ผู้ดูแลระบบ"},
+  acct: {pass:"5678",label:"เจ้าหน้าที่บัญชี"}
+};
+let loginRole="admin", currentRole=null;
+function isAdmin(){return currentRole==="admin"}
+
+function pickRole(r){
+  loginRole=r;
+  document.getElementById("rAdmin").classList.toggle("on",r==="admin");
+  document.getElementById("rAcct").classList.toggle("on",r==="acct");
+}
+
+function applyRole(){
+  document.getElementById("roleBadge").textContent=accounts[currentRole]?.label||"";
+  document.getElementById("settingsCard").style.display=isAdmin()?"":"none";
+  document.getElementById("usersCard").style.display=isAdmin()?"":"none";
+}
+
+function saveAccts(){
+  const a=val("paAdmin").trim(), b=val("paAcct").trim();
+  if(a) accounts.admin.pass=a;
+  if(b) accounts.acct.pass=b;
+  set("paAdmin",""); set("paAcct","");
+  alert("บันทึกรหัสผ่านเรียบร้อย");
+}
+
+function show(v){
+  document.querySelectorAll(".view").forEach(s=>s.classList.remove("active"));
+  document.querySelectorAll("nav.tabs .tab").forEach(b=>b.classList.remove("active"));
+  if(v==="editor"){document.getElementById("v-editor").classList.add("active");}
+  else{
+    document.getElementById("v-"+v).classList.add("active");
+    const tab=document.querySelector(`.tab[data-v="${v}"]`); if(tab)tab.classList.add("active");
+  }
+  if(v==="public") renderPublic();
+  if(v==="admin"){
+    document.getElementById("loginCard").style.display=authed?"none":"";
+    document.getElementById("adminPanel").style.display=authed?"":"none";
+    if(authed){applyRole();renderAdmin();}
+  }
+  if(v==="editor") renderCertPreview();
+  window.scrollTo({top:0,behavior:"smooth"});
+}
+document.querySelectorAll("nav.tabs .tab").forEach(b=>b.onclick=()=>show(b.dataset.v));
+
+function doLogin(){
+  if(val("pass")===accounts[loginRole].pass){
+    authed=true; currentRole=loginRole;
+    document.getElementById("loginErr").textContent="";
+    set("pass","");
+    show("admin");
+  }else{
+    document.getElementById("loginErr").textContent="รหัสผ่านไม่ถูกต้อง";
+  }
+}
+
+function logout(){
+  authed=false; currentRole=null; set("pass","");
+  show("admin");
+}
+
+document.getElementById("pubSearch").addEventListener("input",renderPublic);
+
+function renderAll(){renderPublic();if(authed)renderAdmin();}
+
+function initReveal(){
+  const els=document.querySelectorAll(".reveal");
+  if(matchMedia("(prefers-reduced-motion:reduce)").matches){els.forEach(e=>e.classList.add("in"));return;}
+  const io=new IntersectionObserver((entries)=>{
+    entries.forEach(en=>{ if(en.isIntersecting){ en.target.classList.add("in"); io.unobserve(en.target); } });
+  },{threshold:0.12, rootMargin:"0px 0px -8% 0px"});
+  els.forEach(e=>io.observe(e));
+}
+
+function applyImages(){
+  const cov=document.getElementById("coverImg"); if(cov) cov.src=schoolImg;
+  const ci=document.getElementById("certImg"); if(ci) ci.src=tplUrl;
+  const po=document.getElementById("posterImg"); if(po) po.src=posterImg;
+}
+
+function openLightbox(src){document.getElementById("lbImg").src=src;document.getElementById("lightbox").classList.add("on");}
+function closeLightbox(){document.getElementById("lightbox").classList.remove("on");}
+document.addEventListener("keydown",e=>{if(e.key==="Escape")closeLightbox();});
+
+/* ---- โหมดจอใหญ่สำหรับงาน ---- */
+let boardTimer=null;
+function renderBoard(animate){
+  const total=grandTotal();
+  const pct=settings.goal>0?Math.min(100,total/settings.goal*100):0;
+  const named=namedRecords();
+  const elT=document.getElementById("bsTotal");
+  if(animate){animateNumber(elT,total,moneyThai);}
+  else{elT.textContent=moneyThai(total);elT.dataset.cur=total;}
+  document.getElementById("bsBar").style.width=pct+"%";
+  document.getElementById("bsGoal").textContent=moneyThai(settings.goal)+" บาท";
+  document.getElementById("bsPct").textContent=toThaiNum(pct.toFixed(1))+"%";
+  document.getElementById("bsCount").textContent=toThaiNum(named.length);
+  document.getElementById("bsTitle").textContent=settings.title;
+  const latest=[...named].sort((a,b)=>new Date(b.dt)-new Date(a.dt)).slice(0,8).map(r=>r.name);
+  document.getElementById("bsDonors").textContent=latest.length?latest.join("   •   "):"—";
+}
+function openBoard(){
+  document.getElementById("bigscreen").classList.add("on");
+  renderBoard(true);
+  if(boardTimer) clearInterval(boardTimer);
+  boardTimer=setInterval(()=>renderBoard(false),2000);
+}
+function closeBoard(){
+  document.getElementById("bigscreen").classList.remove("on");
+  if(boardTimer){clearInterval(boardTimer);boardTimer=null;}
+  if(document.fullscreenElement) document.exitFullscreen().catch(()=>{});
+}
+function toggleBoardFs(){
+  const el=document.getElementById("bigscreen");
+  if(!document.fullscreenElement){ el.requestFullscreen&&el.requestFullscreen().catch(()=>{}); }
+  else{ document.exitFullscreen&&document.exitFullscreen(); }
+}
+
+/* init */
+set("setTitle",settings.title); set("setSub",settings.sub); set("setGoal",settings.goal);
+set("setTpl",tplUrl); set("setSchool",schoolImg); set("setPoster",posterImg);
+applyImages();
+renderPublic();
+initReveal();
+</script>
+</body>
+</html>
